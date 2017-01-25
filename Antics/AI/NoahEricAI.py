@@ -55,25 +55,40 @@ class AIPlayer(Player):
             moves = []
             for i in range(0, numToPlace):
                 move = None
-                while move == None:
-                    anthillcoords =(0,0)
-                    tunnelcoords = (0,0)
-                    for x in range(0,9):
-                        for y in range(6,9):
-                            if currentState.boardState[x][y].constr == ANTHILL:
-                                anthillcoords = (x,y)
-                            if currentState.boardState[x][y].constr == TUNNEL:
-                                tunnelcoords = (x,y)
+
+                sequence = [(0,6),(9,6),(1,6),(8,6),(2,6),(7,6),(3,6),(6,6),(4,6),(5,6),
+                            (0,7),(9,7),(1,7),(8,7),(2,7),(7,7),(3,7),(6,7),(4,7),(5,7),
+                            (0,8),(9,8),(1,8),(8,8),(2,8),(7,8),(3,8),(6,8),(4,8),(5,8),
+                            (0,9),(9,9),(1,9),(8,9),(2,9),(7,9),(3,9),(6,9),(4,9),(5,9)
+                            ]
+
+                #while move == None:
+                    #anthillcoords = (0,0)
+                    #tunnelcoords = (0,0)
+                    #for x in range(0,9):
+                    #    for y in range(6,9):
+                    #        if currentState.boardState[x][y].constr == ANTHILL:
+                    #            anthillcoords = (x,y)
+                    #        if currentState.boardState[x][y].constr == TUNNEL:
+                    #            tunnelcoords = (x,y)
+
+
                     # Choose any x location
-                    x = random.randint(0, 9)
+                    #x = random.randint(0, 9)
                     # Choose any y location on enemy side of the board
-                    y = random.randint(6, 9)
+                    #y = random.randint(6, 9)
                     # Set the move if this space is empty
-                    if currentState.board[x][y].constr == None and (x, y) not in moves:
-                        move = (x, y)
+                count = 0
+                for index in sequence:
+                    if count == 2:
+                        break
+                    if currentState.board[index[0]][index[1]].constr == None:
+                        count+=1
+                        move = (index[0], index[1])
+                        moves.append(move)
                         # Just need to make the space non-empty. So I threw whatever I felt like in there.
-                        currentState.board[x][y].constr == True
-                moves.append(move)
+                        currentState.board[index[0]][index[1]].constr == True
+                #moves.append(move)
             return moves
         else:
             return None  # should never happen
