@@ -14,7 +14,7 @@ from AIPlayerUtils import *
 
 ##
 # AIPlayer
-# Description: The responsbility of this class is to interact with the game by
+# Description: The responsibility of this class is to interact with the game by
 # deciding a valid move based on a given game state. This class has methods that
 # will be implemented by students in Dr. Nuxoll's AI course.
 #
