@@ -787,7 +787,7 @@ class Game(object):
             if self.checkMoveStart(firstCoord):
                 #get ant to move
                 antToMove = self.state.board[firstCoord[0]][firstCoord[1]].ant
-                movePoints = UNIT_STATS[antToMove.type][MOVEMENT]             
+                movePoints = UNIT_STATS[antToMove.type][MOVEMENT]
                 previousCoord = None
 
                 index = 0

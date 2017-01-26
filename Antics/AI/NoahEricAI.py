@@ -45,25 +45,28 @@ class AIPlayer(Player):
         self.myFood = None
         self.myTunnel = None
         if currentState.phase == SETUP_PHASE_1:
-            return [(2, 1), (7, 1), #anthill/ tunnel
+            return [(2, 1), (7, 1), #anthill, tunnel
                     #grass
-                    (0, 3), (1, 3), (2, 3), (3, 3), \
-                    (4, 3), (5, 3), (6, 3), \
-                    (7, 3), (8, 3)];
+                    (0, 3), (1, 3), (2, 3), (3, 3),
+                    (4, 3), (5, 3), (6, 3),
+                    (7, 3), (8, 3)]
         elif currentState.phase == SETUP_PHASE_2:
+            #food placement
             #numToPlace = 2
             moves = []
             #for i in range(0, numToPlace):
             move = None
 
+            #spots on the board
             sequence = [(0,6),(9,6),(1,6),(8,6),(2,6),(7,6),(3,6),(6,6),(4,6),(5,6),
                         (0,7),(9,7),(1,7),(8,7),(2,7),(7,7),(3,7),(6,7),(4,7),(5,7),
                         (0,8),(9,8),(1,8),(8,8),(2,8),(7,8),(3,8),(6,8),(4,8),(5,8),
                         (0,9),(9,9),(1,9),(8,9),(2,9),(7,9),(3,9),(6,9),(4,9),(5,9)
                         ]
 
+            #finds valid locations
             sequence1 = [s for s in sequence if currentState.board[s[0]][s[1]].constr == None]
-            print(sequence1)
+
             anthillcoords = (0,0)
             tunnelcoords = (0,0)
             for x in range(0,10):
@@ -74,8 +77,6 @@ class AIPlayer(Player):
                         if currentState.board[x][y].constr.type == TUNNEL:
                             tunnelcoords = (x,y)
 
-            print(anthillcoords)
-            print(tunnelcoords)
 
             farthest = 0
             farthestCoords = (0,0)
@@ -92,10 +93,8 @@ class AIPlayer(Player):
                         farthestCoords = s
 
             moves.append(farthestCoords)
-            print(farthestCoords)
 
             sequence2 = [s for s in sequence1 if s[0] != farthestCoords[0] and s[1] != farthestCoords[1]]
-            print(sequence2)
 
             farthest = 0
             farthestCoords = (0,0)
@@ -112,19 +111,6 @@ class AIPlayer(Player):
                         farthestCoords = s
 
             moves.append(farthestCoords)
-            print(farthestCoords)
-
-                #count = 0
-                #for index in sequence:
-                #    if count == 2:
-                #        break
-                #    if currentState.board[index[0]][index[1]].constr == None:
-                #        count+=1
-                #        move = (index[0], index[1])
-                #        moves.append(move)
-                        # Just need to make the space non-empty. So I threw whatever I felt like in there.
-                #        currentState.board[index[0]][index[1]].constr == True
-                #moves.append(move)
             return moves
         else:
             return None  # should never happen
@@ -158,8 +144,16 @@ class AIPlayer(Player):
 
         # if I don't have a worker, give up.  QQ
         numAnts = len(myInv.ants)
+        numFood = myInv.foodCount
         if (numAnts == 1):
-            return Move(END, None, None)
+            if numFood == 0:
+                return Move(END, None, None)
+            else:
+                #Build Worker
+                if (getAntAt(currentState, myInv.getAnthill().coords) is None):
+                    return Move(BUILD, [myInv.getAnthill().coords], WORKER)
+                else:
+                    return Move(END, None, None)
 
         # if the worker has already moved, we're done
         myWorker = getAntList(currentState, me, (WORKER,))[0]
@@ -169,7 +163,7 @@ class AIPlayer(Player):
         # if the queen is on the anthill move her
         myQueen = myInv.getQueen()
         if (myQueen.coords == myInv.getAnthill().coords):
-            return Move(MOVE_ANT, [myInv.getQueen().coords, (1, 0)], None)
+            return Move(MOVE_ANT, [myQueen.coords, (myQueen.coords[0]+1, myQueen.coords[1])], None)
 
         # if the hasn't moved, have her move in place so she will attack
         if (not myQueen.hasMoved):
