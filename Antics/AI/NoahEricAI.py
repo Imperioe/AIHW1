@@ -156,7 +156,12 @@ class AIPlayer(Player):
                     return Move(END, None, None)
 
         # if the worker has already moved, we're done
-        myWorker = getAntList(currentState, me, (WORKER,))[0]
+        myWorker = None
+        if  not getAntList(currentState, me, (WORKER,)) == None:
+            myWorker = getAntList(currentState, me, (WORKER,))[0]
+        else:
+            return Move(END, None, None)
+
         if (myWorker.hasMoved):
             return Move(END, None, None)
 
