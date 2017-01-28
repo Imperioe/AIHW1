@@ -180,9 +180,9 @@ class AIPlayer(Player):
                             self.food2.coords, UNIT_STATS[WORKER][MOVEMENT])
                         return Move(MOVE_ANT, path, None)
                 else:
-                    if (stepsToReach(currentState, self.tunnel, w.coords) < stepsToReach(currentState, self.anthill, w.coords)):
+                    if (stepsToReach(currentState, self.myTunnel.coords, w.coords) < stepsToReach(currentState, self.hill.coords, w.coords)):
                         path = createPathToward(currentState, w.coords,
-                            self.tunnel.coords, UNIT_STATS[WORKER][MOVEMENT])
+                            self.myTunnel.coords, UNIT_STATS[WORKER][MOVEMENT])
                         return Move(MOVE_ANT, path, None)
                     else:
                         path = createPathToward(currentState, w.coords,
