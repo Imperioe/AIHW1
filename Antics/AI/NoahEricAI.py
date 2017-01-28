@@ -189,20 +189,24 @@ class AIPlayer(Player):
             if (getAntAt(currentState, myInv.getAnthill().coords) is None):
                 return Move(BUILD, [myInv.getAnthill().coords], DRONE)
 
+        enemyAnthill = None
         # Move all my drones towards the enemy
+        if currentState.inventories[PLAYER_TWO].ants == myInv.ants:
+            for c in currentState.inventories[PLAYER_ONE].constrs:
+                if c.type == ANTHILL:
+                    enemyAnthill = c.coords
+        else:
+            for c in currentState.inventories[PLAYER_TWO].constrs:
+                if c.type == ANTHILL:
+                    enemyAnthill = c.coords
+
         myDrones = getAntList(currentState, me, (DRONE,))
-        for drone in myDrones:
-            if not (drone.hasMoved):
-                droneX = drone.coords[0]
-                droneY = drone.coords[1]
-                if (droneY < 9):
-                    droneY += 1;
-                else:
-                    droneX += 1;
-                if (droneX, droneY) in listReachableAdjacent(currentState, drone.coords, 3):
-                    return Move(MOVE_ANT, [drone.coords, (droneX, droneY)], None)
-                else:
-                    return Move(MOVE_ANT, [drone.coords], None)
+        for d in myDrones:
+            if not (d.hasMoved):
+                if not d.coords == enemyAnthill:
+                    path = createPathToward(currentState, d.coords,
+                                            enemyAnthill, UNIT_STATS[DRONE][MOVEMENT])
+                    return Move(MOVE_ANT, path, None)
 
         # New move method
         self.headingToFood1 = 0
