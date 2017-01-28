@@ -155,7 +155,7 @@ class AIPlayer(Player):
         # if I don't have a worker, give up.  QQ
         numAnts = len(myInv.ants)
         numFood = myInv.foodCount
-        if (numAnts == 1):
+        if not getAntList(currentState, me, (WORKER,)): # no worker
             if numFood == 0:
                 return Move(END, None, None)
             else:
@@ -164,38 +164,15 @@ class AIPlayer(Player):
                     return Move(BUILD, [myInv.getAnthill().coords], WORKER)
                 else:
                     return Move(END, None, None)
+        elif not len(getAntList(currentState, me, (WORKER,))) == 2:
+            if (getAntAt(currentState, myInv.getAnthill().coords) is None):
+                return Move(BUILD, [myInv.getAnthill().coords], WORKER)
 
-        self.headingToFood1 = 0
-        myWorkers = getAntList(currentState, me, (WORKER,))
-        for w in myWorkers:
-            if not (w.hasMoved):
-                if not (w.carrying):
-                    if (stepsToReach(currentState, self.food1.coords, w.coords) < stepsToReach(currentState, self.food2.coords, w.coords) and headingToFood1 == 0):
-                        self.headingToFood1 = 1
-                        path = createPathToward(currentState, w.coords,
-                                    self.food1.coords, UNIT_STATS[WORKER][MOVEMENT])
-                        return Move(MOVE_ANT, path, None)
-                    else:
-                        path = createPathToward(currentState, w.coords,
-                            self.food2.coords, UNIT_STATS[WORKER][MOVEMENT])
-                        return Move(MOVE_ANT, path, None)
-                else:
-                    if (stepsToReach(currentState, self.myTunnel.coords, w.coords) < stepsToReach(currentState, self.hill.coords, w.coords)):
-                        path = createPathToward(currentState, w.coords,
-                            self.myTunnel.coords, UNIT_STATS[WORKER][MOVEMENT])
-                        return Move(MOVE_ANT, path, None)
-                    else:
-                        path = createPathToward(currentState, w.coords,
-                           self.anthill.coords, UNIT_STATS[WORKER][MOVEMENT])
-                        return Move(MOVE_ANT, path, None)  # if the queen is on the anthill move her
         # if the worker has already moved, we're done
         myWorker = None
-        if  not getAntList(currentState, me, (WORKER,)) == None:
+        if getAntList(currentState, me, (WORKER,)):
             myWorker = getAntList(currentState, me, (WORKER,))[0]
         else:
-            return Move(END, None, None)
-
-        if (myWorker.hasMoved):
             return Move(END, None, None)
 
         myQueen = myInv.getQueen()
@@ -226,6 +203,38 @@ class AIPlayer(Player):
                     return Move(MOVE_ANT, [drone.coords, (droneX, droneY)], None)
                 else:
                     return Move(MOVE_ANT, [drone.coords], None)
+
+        # New move method
+        self.headingToFood1 = 0
+        myWorkers = getAntList(currentState, me, (WORKER,))
+        for w in myWorkers:
+            if not (w.hasMoved):
+                if not (w.carrying):
+                    if (stepsToReach(currentState, self.food1.coords, w.coords) < stepsToReach(currentState,
+                                                                                               self.food2.coords,
+                                                                                               w.coords) and self.headingToFood1 == 0):
+                        self.headingToFood1 = 1
+                        path = createPathToward(currentState, w.coords,
+                                                self.food1.coords, UNIT_STATS[WORKER][MOVEMENT])
+                        return Move(MOVE_ANT, path, None)
+                    else:
+                        path = createPathToward(currentState, w.coords,
+                                                self.food2.coords, UNIT_STATS[WORKER][MOVEMENT])
+                        return Move(MOVE_ANT, path, None)
+                else:
+                    if (stepsToReach(currentState, self.myTunnel.coords, w.coords) < stepsToReach(
+                            currentState,
+                            self.hill.coords,
+                            w.coords)):
+                        path = createPathToward(currentState, w.coords,
+                                                self.myTunnel.coords, UNIT_STATS[WORKER][MOVEMENT])
+                        return Move(MOVE_ANT, path, None)
+                    else:
+                        path = createPathToward(currentState, w.coords,
+                                                self.hill.coords, UNIT_STATS[WORKER][MOVEMENT])
+                        return Move(MOVE_ANT, path, None)  # if the queen is on the anthill move her
+
+        return Move(END, None, None)
 
 
     ##
