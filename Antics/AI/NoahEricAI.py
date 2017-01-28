@@ -137,39 +137,63 @@ class AIPlayer(Player):
     #
     ##
     def getMove(self, currentState):
-        # Useful pointers
         myInv = getCurrPlayerInventory(currentState)
         me = currentState.whoseTurn
+        self.hill = None
+        self.foods = None
 
-        # the first time this method is called, the food and tunnel locations
-        # need to be recorded in their respective instance variables
+        # stores coordinates of tunnel, hill, foods and whether they are close to the tunnel or the anthill
         if (self.myTunnel == None):
             self.myTunnel = getConstrList(currentState, me, (TUNNEL,))[0]
-        if (self.myFood == None):
-            foods = getConstrList(currentState, None, (FOOD,))
-            self.myFood = foods[0]
-            # find the food closest to the tunnel
-            bestDistSoFar = 1000  # i.e., infinity
-            for food in foods:
-                dist = stepsToReach(currentState, self.myTunnel.coords, food.coords)
-                if (dist < bestDistSoFar):
-                    self.myFood = food
-                    bestDistSoFar = dist
+        if (self.hill == None):
+            self.hill = getConstrList(currentState, me, (ANTHILL,))[0]
+        if (self.foods == None):
+            self.foods = getConstrList(currentState, None, (FOOD,))
+            self.food1 = self.foods[0]
+            self.food2 = self.foods[1]
+            # finds closest food to tunnel
+            #for f in self.foods:
+               ## distToTunnel = stepsToReach(currentState, self.myTunnel.coords, f.coords)
+                #distToHill = stepsToReach(currentState, self.hill.coords, f.coords)
+                #if (distToHill < distToTunnel):
+                    #if (self.foodHill1 == None):
+                        #self.foodHill1 = f
+                    #else:
+                        #self.foodHill2 = f
+                #else:
+                    #if (self.foodTunnel1 == None):
+                        #self.foodTunnel1 = f
+                    #else:
+                        #self.foodTunnel2 = f
 
-        # if I don't have a worker, give up.  QQ
-        numAnts = len(myInv.ants)
-        if (numAnts == 1):
-            return Move(END, None, None)
 
-        # if the worker has already moved, we're done
-        myWorker = getAntList(currentState, me, (WORKER,))[0]
-        if (myWorker.hasMoved):
-            return Move(END, None, None)
+        self.headingToFood1 = 0
+        myWorkers = getAntList(currentState, me, (WORKER,))
+        for w in myWorkers:
+            if not (w.hasMoved):
+                if not (w.carrying):
+                    if (stepsToReach(currentState, self.food1.coords, w.coords) < stepsToReach(currentState, self.food2.coords, w.coords) and headingToFood1 == 0):
+                        self.headingToFood1 = 1
+                        path = createPathToward(currentState, w.coords,
+                                    self.food1.coords, UNIT_STATS[WORKER][MOVEMENT])
+                        return Move(MOVE_ANT, path, None)
+                    else:
+                        path = createPathToward(currentState, w.coords,
+                            self.food2.coords, UNIT_STATS[WORKER][MOVEMENT])
+                        return Move(MOVE_ANT, path, None)
+                else:
+                    if (stepsToReach(currentState, self.tunnel, w.coords) < stepsToReach(currentState, self.anthill, w.coords)):
+                        path = createPathToward(currentState, w.coords,
+                            self.tunnel.coords, UNIT_STATS[WORKER][MOVEMENT])
+                        return Move(MOVE_ANT, path, None)
+                    else:
+                        path = createPathToward(currentState, w.coords,
+                           self.anthill.coords, UNIT_STATS[WORKER][MOVEMENT])
+                        return Move(MOVE_ANT, path, None)  # if the queen is on the anthill move her
 
-        # if the queen is on the anthill move her
         myQueen = myInv.getQueen()
         if (myQueen.coords == myInv.getAnthill().coords):
-            return Move(MOVE_ANT, [myInv.getQueen().coords, (1, 0)], None)
+            return Move(MOVE_ANT, [myQueen.coords, (myQueen.coords[0]+1, myQueen.coords[1])], None)
 
         # if the hasn't moved, have her move in place so she will attack
         if (not myQueen.hasMoved):
@@ -196,17 +220,6 @@ class AIPlayer(Player):
                 else:
                     return Move(MOVE_ANT, [drone.coords], None)
 
-        # if the worker has food, move toward tunnel
-        if (myWorker.carrying):
-            path = createPathToward(currentState, myWorker.coords,
-                                    self.myTunnel.coords, UNIT_STATS[WORKER][MOVEMENT])
-            return Move(MOVE_ANT, path, None)
-
-        # if the worker has no food, move toward food
-        else:
-            path = createPathToward(currentState, myWorker.coords,
-                                    self.myFood.coords, UNIT_STATS[WORKER][MOVEMENT])
-            return Move(MOVE_ANT, path, None)
 
     ##
     # getAttack
