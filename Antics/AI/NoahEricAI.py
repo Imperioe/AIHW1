@@ -156,9 +156,7 @@ class AIPlayer(Player):
         numAnts = len(myInv.ants)
         numFood = myInv.foodCount
         if not getAntList(currentState, me, (WORKER,)): # no worker
-            if numFood == 0:
-                return Move(END, None, None)
-            else:
+            if numFood > 0:
                 #Build Worker
                 if (getAntAt(currentState, myInv.getAnthill().coords) is None):
                     return Move(BUILD, [myInv.getAnthill().coords], WORKER)
@@ -166,7 +164,8 @@ class AIPlayer(Player):
                     return Move(END, None, None)
         elif not len(getAntList(currentState, me, (WORKER,))) == 2:
             if (getAntAt(currentState, myInv.getAnthill().coords) is None):
-                return Move(BUILD, [myInv.getAnthill().coords], WORKER)
+                if numFood > 0:
+                    return Move(BUILD, [myInv.getAnthill().coords], WORKER)
 
         # if the worker has already moved, we're done
         myWorker = None
