@@ -185,7 +185,7 @@ class AIPlayer(Player):
 
         # if I have the foos and the anthill is unoccupied then
         # make a drone
-        if (myInv.foodCount > 2):
+        if (myInv.foodCount > 2 and len(getAntList(currentState, me, (DRONE,))) == 0):
             if (getAntAt(currentState, myInv.getAnthill().coords) is None):
                 return Move(BUILD, [myInv.getAnthill().coords], DRONE)
 
