@@ -292,6 +292,7 @@ class AIPlayer(Player):
         # method templaste, not implemented
         pass
 
+
     ##
     # createOtherPath
     #
