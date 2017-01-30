@@ -372,7 +372,42 @@ def createPathToward(currentState, sourceCoords, targetCoords, movement):
         if (not found): break #no usable steps found
 
     return path
-        
+
+def createOtherPath(currentState, sourceCoords, targetCoords, movement):
+    distToTarget = approxDist(sourceCoords, targetCoords)
+    path = [sourceCoords]
+    curr = sourceCoords
+
+    #keep adding steps to the path until movement runs out
+    step = 0
+    while (movement > 0):
+        found = False  #was a new step found to add to the path
+        for coord in listReachableAdjacent(currentState, sourceCoords, movement):
+            #is this a step headed in the right direction?
+            if (approxDist(coord, targetCoords) >= distToTarget):
+
+                #how much movement does it cost to get there?
+                constr = getConstrAt(currentState, coord)
+                moveCost = 1  #default cost
+                if (constr != None):
+                    moveCost = CONSTR_STATS[constr.type][MOVE_COST]
+                #if I have enough movement left then add it to the path
+                if (moveCost <= movement):
+                    #add the step to the path
+                    found = True
+                    path.append(coord)
+
+                    #restart the search from the new coordinate
+                    movement = movement - moveCost
+                    sourceCoords = coord
+                    distToTarget = approxDist(sourceCoords, targetCoords)
+                    break
+        if (not found): break #no usable steps found
+
+    return path
+
+
+
 ##
 # listAllBuildMoves
 #
