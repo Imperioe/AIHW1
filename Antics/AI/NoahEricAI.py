@@ -13,6 +13,10 @@ from AIPlayerUtils import *
 
 
 ##
+# @authors Eric Imperio and Noah Sperling
+#
+# Dr. Nuxoll's Booger class used as a starting point and for reference
+#
 # AIPlayer
 # Description: The responsibility of this class is to interact with the game by
 # deciding a valid move based on a given game state. This class has methods that
@@ -35,12 +39,22 @@ class AIPlayer(Player):
         self.myFood = None
         self.myTunnel = None
 
+
     ##
     # getPlacement
     #
-    # The agent uses a hardcoded arrangement for phase 1 to provide maximum
-    # protection to the queen.  Enemy food is placed randomly.
+    # The agent places the hill and tunnel for maximum access to food.
+    # Grass is placed to slow enemy movement onto the AI's side.
+    # Enemy food is placed as far away from the enemy tunnel and hill as possible
     #
+    #Parameters
+    #    self - current class object
+    #    currentState - the current game state
+    #
+    #Return
+    #    returns an array of tuples
+    #
+    ##
     def getPlacement(self, currentState):
         self.myFood = None
         self.myTunnel = None
@@ -115,11 +129,18 @@ class AIPlayer(Player):
         else:
             return None  # should never happen
 
+
     ##
     # getMove
     #
-    # This agent simply gathers food as fast as it can with its worker.  It
-    # never attacks and never builds more ants.  The queen is never moved.
+    #Parameters:
+    #    self - the AI class
+    #    currentState - the current game state
+    #
+    #Return:
+    #    a Move Object
+    #
+    # This agent gathers food and sends drones at the enemy hill
     #
     ##
     def getMove(self, currentState):
@@ -137,22 +158,7 @@ class AIPlayer(Player):
             self.foods = getConstrList(currentState, None, (FOOD,))
             self.food1 = self.foods[0]
             self.food2 = self.foods[1]
-            # finds closest food to tunnel
-            #for f in self.foods:
-               ## distToTunnel = stepsToReach(currentState, self.myTunnel.coords, f.coords)
-                #distToHill = stepsToReach(currentState, self.hill.coords, f.coords)
-                #if (distToHill < distToTunnel):
-                    #if (self.foodHill1 == None):
-                        #self.foodHill1 = f
-                    #else:
-                        #self.foodHill2 = f
-                #else:
-                    #if (self.foodTunnel1 == None):
-                        #self.foodTunnel1 = f
-                    #else:
-                        #self.foodTunnel2 = f
 
-        # if I don't have a worker, give up.  QQ
         numAnts = len(myInv.ants)
         numFood = myInv.foodCount
         if not getAntList(currentState, me, (WORKER,)): # no worker
@@ -264,16 +270,74 @@ class AIPlayer(Player):
     ##
     # getAttack
     #
-    # This agent never attacks
+    #Parameters
+    #    self - the current class object
+    #    currentState - the current GameState
+    #    attackingAnt - the ant that is attacking another ant
+    #    enemyLocations - an array of enemy locations
     #
+    #Return
+    #    returns the first passed in enemy location to attack
+    ##
     def getAttack(self, currentState, attackingAnt, enemyLocations):
         return enemyLocations[0]  # don't care
+
 
     ##
     # registerWin
     #
-    # This agent doens't learn
+    # This agent doesn't learn good
     #
     def registerWin(self, hasWon):
         # method templaste, not implemented
         pass
+
+
+    ##
+    #
+    #createOtherPath
+    #
+    #Creates a path away from a goal destination in case ants get stuck
+    #
+    #Parameters
+    #    currentState - the current GameState
+    #    sourceCoords - the coordinates to calculate the move from
+    #    targetCoords - the coords to move away from
+    #    movement - the amount of movement points available to spend
+    #
+    #Return
+    #    returns a list of tuples that say where to send the ant
+    #
+    def createOtherPath(currentState, sourceCoords, targetCoords, movement):
+        distToTarget = approxDist(sourceCoords, targetCoords)
+        path = [sourceCoords]
+        curr = sourceCoords
+
+        # keep adding steps to the path until movement runs out
+        step = 0
+        while (movement > 0):
+            found = False  # was a new step found to add to the path
+            for coord in listReachableAdjacent(currentState, sourceCoords, movement):
+                # is this a step headed in the right direction?
+                if (approxDist(coord, targetCoords) >= distToTarget):
+
+                    # how much movement does it cost to get there?
+                    constr = getConstrAt(currentState, coord)
+                    moveCost = 1  # default cost
+                    if (constr != None):
+                        moveCost = CONSTR_STATS[constr.type][MOVE_COST]
+                    # if I have enough movement left then add it to the path
+                    if (moveCost <= movement):
+                        # add the step to the path
+                        found = True
+                        path.append(coord)
+
+                        # restart the search from the new coordinate
+                        movement = movement - moveCost
+                        sourceCoords = coord
+                        distToTarget = approxDist(sourceCoords, targetCoords)
+                        break
+            if (not found): break  # no usable steps found
+
+        return path
+
