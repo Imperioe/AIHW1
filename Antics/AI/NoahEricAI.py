@@ -295,6 +295,7 @@ class AIPlayer(Player):
 
     ##
     # createOtherPath
+    #       Based on Nuxolls createPathToward method
     #
     # creates a legal path Away from the destination.
     # Does not make sure the queen wont move out of her zone
