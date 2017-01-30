@@ -292,21 +292,20 @@ class AIPlayer(Player):
         # method templaste, not implemented
         pass
 
-
     ##
+    # createOtherPath
     #
-    #createOtherPath
-    #
-    #Creates a path away from a goal destination in case ants get stuck
+    # creates a legal path Away from the destination.
+    # Does not make sure the queen wont move out of her zone
     #
     #Parameters
-    #    currentState - the current GameState
-    #    sourceCoords - the coordinates to calculate the move from
-    #    targetCoords - the coords to move away from
-    #    movement - the amount of movement points available to spend
+    #   currentState - currentState of the game
+    #   sourceCoords - starting position (an x,y coord)
+    #   targetCoords - destination position (an x,y coord)
+    #   movement     - movement points to spend
     #
-    #Return
-    #    returns a list of tuples that say where to send the ant
+    # Return
+    #   returns a path they moves away from the destination
     #
     def createOtherPath(currentState, sourceCoords, targetCoords, movement):
         distToTarget = approxDist(sourceCoords, targetCoords)
@@ -319,6 +318,7 @@ class AIPlayer(Player):
             found = False  # was a new step found to add to the path
             for coord in listReachableAdjacent(currentState, sourceCoords, movement):
                 # is this a step headed in the right direction?
+                # only true change from Nuxolls createPathToward method
                 if (approxDist(coord, targetCoords) >= distToTarget):
 
                     # how much movement does it cost to get there?
@@ -340,4 +340,3 @@ class AIPlayer(Player):
             if (not found): break  # no usable steps found
 
         return path
-
