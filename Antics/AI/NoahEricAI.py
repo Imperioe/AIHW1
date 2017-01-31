@@ -131,6 +131,57 @@ class AIPlayer(Player):
 
 
     ##
+    # createOtherPath
+    #       Based on Nuxolls createPathToward method
+    #
+    # creates a legal path Away from the destination.
+    # Does not make sure the queen wont move out of her zone
+    #
+    # Parameters
+    #   currentState - currentState of the game
+    #   sourceCoords - starting position (an x,y coord)
+    #   targetCoords - destination position (an x,y coord)
+    #   movement     - movement points to spend
+    #
+    # Return
+    #   returns a path they moves away from the destination
+    #
+    def createOtherPath(self, currentState, sourceCoords, targetCoords, movement):
+        distToTarget = approxDist(sourceCoords, targetCoords)
+        path = [sourceCoords]
+        curr = sourceCoords
+
+        # keep adding steps to the path until movement runs out
+        step = 0
+        while (movement > 0):
+            found = False  # was a new step found to add to the path
+            for coord in listReachableAdjacent(currentState, sourceCoords, movement):
+                # is this a step headed in the right direction?
+                # only true change from Nuxolls createPathToward method
+                if (approxDist(coord, targetCoords) >= distToTarget):
+
+                    # how much movement does it cost to get there?
+                    constr = getConstrAt(currentState, coord)
+                    moveCost = 1  # default cost
+                    if (constr != None):
+                        moveCost = CONSTR_STATS[constr.type][MOVE_COST]
+                    # if I have enough movement left then add it to the path
+                    if (moveCost <= movement):
+                        # add the step to the path
+                        found = True
+                        path.append(coord)
+
+                        # restart the search from the new coordinate
+                        movement = movement - moveCost
+                        sourceCoords = coord
+                        distToTarget = approxDist(sourceCoords, targetCoords)
+                        break
+            if (not found): break  # no usable steps found
+
+        return path
+
+
+    ##
     # getMove
     #
     #Parameters:
@@ -211,7 +262,12 @@ class AIPlayer(Player):
                 if not d.coords == enemyAnthill:
                     path = createPathToward(currentState, d.coords,
                                             enemyAnthill, UNIT_STATS[DRONE][MOVEMENT])
-                    return Move(MOVE_ANT, path, None)
+                    if not path == [d.coords]:
+                        return Move(MOVE_ANT, path, None)
+                    else:
+                        path = self.createOtherPath(currentState, d.coords,
+                                                    self.food2.coords, UNIT_STATS[DRONE][MOVEMENT])
+                        return Move(MOVE_ANT, path, None)
 
         # New move method
         self.headingToFood1 = 0
@@ -228,7 +284,7 @@ class AIPlayer(Player):
                             if not path == [w.coords]:
                               return Move(MOVE_ANT, path, None)
                             else:
-                                path = createOtherPath(currentState, w.coords,
+                                path = self.createOtherPath(currentState, w.coords,
                                                       self.food1.coords, UNIT_STATS[WORKER][MOVEMENT])
                                 return Move(MOVE_ANT, path, None)
                         else:
@@ -237,7 +293,7 @@ class AIPlayer(Player):
                             if not path == [w.coords]:
                                 return Move(MOVE_ANT, path, None)
                             else:
-                                path = createOtherPath(currentState, w.coords,
+                                path = self.createOtherPath(currentState, w.coords,
                                                       self.food2.coords, UNIT_STATS[WORKER][MOVEMENT])
                                 return Move(MOVE_ANT, path, None)
 
@@ -251,7 +307,7 @@ class AIPlayer(Player):
                         if not path == [w.coords]:
                             return Move(MOVE_ANT, path, None)
                         else:
-                            path = createOtherPath(currentState, w.coords,
+                            path = self.createOtherPath(currentState, w.coords,
                                                    self.myTunnel.coords, UNIT_STATS[WORKER][MOVEMENT])
                             return Move(MOVE_ANT, path, None)
                     else:
@@ -260,7 +316,7 @@ class AIPlayer(Player):
                         if not path == [w.coords]:
                             return Move(MOVE_ANT, path, None)  # if the queen is on the anthill move her
                         else:
-                            path = createOtherPath(currentState, w.coords,
+                            path = self.createOtherPath(currentState, w.coords,
                                                    self.hill.coords, UNIT_STATS[WORKER][MOVEMENT])
                             return Move(MOVE_ANT, path, None)
 
@@ -291,54 +347,3 @@ class AIPlayer(Player):
     def registerWin(self, hasWon):
         # method templaste, not implemented
         pass
-
-
-    ##
-    # createOtherPath
-    #       Based on Nuxolls createPathToward method
-    #
-    # creates a legal path Away from the destination.
-    # Does not make sure the queen wont move out of her zone
-    #
-    #Parameters
-    #   currentState - currentState of the game
-    #   sourceCoords - starting position (an x,y coord)
-    #   targetCoords - destination position (an x,y coord)
-    #   movement     - movement points to spend
-    #
-    # Return
-    #   returns a path they moves away from the destination
-    #
-    def createOtherPath(currentState, sourceCoords, targetCoords, movement):
-        distToTarget = approxDist(sourceCoords, targetCoords)
-        path = [sourceCoords]
-        curr = sourceCoords
-
-        # keep adding steps to the path until movement runs out
-        step = 0
-        while (movement > 0):
-            found = False  # was a new step found to add to the path
-            for coord in listReachableAdjacent(currentState, sourceCoords, movement):
-                # is this a step headed in the right direction?
-                # only true change from Nuxolls createPathToward method
-                if (approxDist(coord, targetCoords) >= distToTarget):
-
-                    # how much movement does it cost to get there?
-                    constr = getConstrAt(currentState, coord)
-                    moveCost = 1  # default cost
-                    if (constr != None):
-                        moveCost = CONSTR_STATS[constr.type][MOVE_COST]
-                    # if I have enough movement left then add it to the path
-                    if (moveCost <= movement):
-                        # add the step to the path
-                        found = True
-                        path.append(coord)
-
-                        # restart the search from the new coordinate
-                        movement = movement - moveCost
-                        sourceCoords = coord
-                        distToTarget = approxDist(sourceCoords, targetCoords)
-                        break
-            if (not found): break  # no usable steps found
-
-        return path
